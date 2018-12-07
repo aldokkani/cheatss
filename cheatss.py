@@ -5,9 +5,12 @@ from mss import mss
 import pyautogui
 import imutils
 
-monitor = {'top': 0, 'left': 0, 'width': 500, 'height': 800}
+monitor = {'top': 215, 'left': 0, 'width': 1030, 'height': 430}
 
 prev_frame = None
+
+piece_color = True  # True == light and False == dark
+moves = []
 
 for i in range(1, 0, -1):
     print(i)
@@ -36,25 +39,47 @@ with mss() as sct:
 
         # loop over the contours
         for c in cnts:
+            # if the contour is too small, ignore it
+            if cv2.contourArea(c) < 500:
+                continue
+
             # compute the bounding box for the contour
             (x, y, w, h) = cv2.boundingRect(c)
-            print(x + w/2, y + h/2)
+            print(x + w / 2, y + h / 2)
+            moves.append((int(x + w / 2), int(y + h / 2)))
+
             # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        if cnts:
+        if moves:
+            if moves[0][0] < monitor['width'] / 2:
+                diff = 570
+            else:
+                diff = -570
+            if len(moves) == 2:
+                for m in moves:
+                    pyautogui.click(m[0] + diff, m[1] + monitor['top'])
+
+                pyautogui.click(moves[-1][0] + diff, moves[-1][1] + monitor['top'])  # click away
+                for m in moves[::-1]:
+                    pyautogui.click(m[0] + diff, m[1] + monitor['top'])
+
+            elif len(moves) == 4:
+                print(sorted(moves))
+                smoves = sorted(moves)
+                mwidth = monitor['width']
+                if smoves[0][0] < mwidth * 0.25 or mwidth * 0.5 < smoves[0][0] < mwidth * 0.75:
+                    pyautogui.click(smoves[3][0] + diff, smoves[3][1] + monitor['top'])
+                    pyautogui.click(smoves[1][0] + diff, smoves[1][1] + monitor['top'])
+                else:
+                    pyautogui.click(smoves[0][0] + diff, smoves[0][1] + monitor['top'])
+                    pyautogui.click(smoves[2][0] + diff, smoves[2][1] + monitor['top'])
+
+            # update the previous frame
+            prev_frame = gray
+            moves = []
             print('==========')
 
-        # update the previous frame
-        prev_frame = gray
-
-        cv2.imshow("Board", frame)
+        # cv2.imshow("Board", frame)
         # print(f' Loop took {time.time() - frame_start} seconds.')
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
-
-# for i in range(3, 0, -1):
-#     print(i)
-#     time.sleep(1)
-#
-# pyautogui.click(159, 524)
-# pyautogui.click(103, 637)
