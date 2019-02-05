@@ -4,6 +4,7 @@ import cv2
 from mss import mss
 import pyautogui
 import imutils
+from operator import itemgetter
 
 monitor = {'top': 215, 'left': 0, 'width': 1030, 'height': 430}
 
@@ -15,6 +16,16 @@ moves = []
 for i in range(1, 0, -1):
     print(i)
     time.sleep(1)
+
+def copy_move(mvs, d):
+    global monitor
+    for m in mvs:
+        pyautogui.click(m[0] + d, m[1] + monitor['top'])
+
+    pyautogui.click(mvs[-1][0] + d, mvs[-1][1] + monitor['top'])  # click away
+    for m in mvs[::-1]:
+        pyautogui.click(m[0] + d, m[1] + monitor['top'])
+
 
 with mss() as sct:
     while True:
@@ -50,28 +61,38 @@ with mss() as sct:
 
             # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         if moves:
-            if moves[0][0] < monitor['width'] / 2:
-                diff = 570
-            else:
-                diff = -570
-            if len(moves) == 2:
-                for m in moves:
-                    pyautogui.click(m[0] + diff, m[1] + monitor['top'])
-
-                pyautogui.click(moves[-1][0] + diff, moves[-1][1] + monitor['top'])  # click away
-                for m in moves[::-1]:
-                    pyautogui.click(m[0] + diff, m[1] + monitor['top'])
-
-            elif len(moves) == 4:
-                print(sorted(moves))
-                smoves = sorted(moves)
-                mwidth = monitor['width']
-                if smoves[0][0] < mwidth * 0.25 or mwidth * 0.5 < smoves[0][0] < mwidth * 0.75:
-                    pyautogui.click(smoves[3][0] + diff, smoves[3][1] + monitor['top'])
-                    pyautogui.click(smoves[1][0] + diff, smoves[1][1] + monitor['top'])
-                else:
-                    pyautogui.click(smoves[0][0] + diff, smoves[0][1] + monitor['top'])
-                    pyautogui.click(smoves[2][0] + diff, smoves[2][1] + monitor['top'])
+            # if moves[0][0] < monitor['width'] / 2:
+            #     diff = 570
+            # else:
+            #     diff = -570
+            # if len(moves) == 2:
+            #     for m in moves:
+            #         pyautogui.click(m[0] + diff, m[1] + monitor['top'])
+            #
+            #     pyautogui.click(moves[-1][0] + diff, moves[-1][1] + monitor['top'])  # click away
+            #     for m in moves[::-1]:
+            #         pyautogui.click(m[0] + diff, m[1] + monitor['top'])
+            #     # copy_move(moves, diff)
+            #
+            # elif len(moves) == 4:
+            #     sm = sorted(moves, key=itemgetter(1))
+            #     if sm[3][1]-sm[0][1] < 10:
+            #         smoves = sorted(moves)
+            #         mwidth = monitor['width']
+            #         if smoves[0][0] < mwidth * 0.25 or mwidth * 0.5 < smoves[0][0] < mwidth * 0.75:
+            #             pyautogui.click(smoves[3][0] + diff, smoves[3][1] + monitor['top'])
+            #             pyautogui.click(smoves[1][0] + diff, smoves[1][1] + monitor['top'])
+            #         else:
+            #             pyautogui.click(smoves[0][0] + diff, smoves[0][1] + monitor['top'])
+            #             pyautogui.click(smoves[2][0] + diff, smoves[2][1] + monitor['top'])
+            #     else:
+            #         for m in moves:
+            #             pyautogui.click(m[0] + diff, m[1] + monitor['top'])
+            #
+            #         pyautogui.click(moves[-1][0] + diff,
+            #                         moves[-1][1] + monitor['top'])  # click away
+            #         for m in moves[::-1]:
+            #             pyautogui.click(m[0] + diff, m[1] + monitor['top'])
 
             # update the previous frame
             prev_frame = gray
